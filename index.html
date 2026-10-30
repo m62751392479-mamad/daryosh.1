@@ -2,536 +2,343 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>داریوش | روزگار ساسانی</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>داریوش | دوران ساسانی</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#18251b;color:#fff0cf;font-family:Tahoma;overflow:hidden}
-#game{width:100vw;height:100vh;display:block;background:#87966c}
-#hud{position:absolute;top:8px;right:8px;left:8px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:5px}
-.stat{background:#17251e;border:1px solid #d0b477;border-radius:9px;padding:7px;font-size:12px}
-#menu{position:absolute;top:60px;right:8px;display:flex;gap:5px;flex-wrap:wrap}
-button{background:#304b35;color:#fff0cf;border:1px solid #d0b477;border-radius:9px;padding:10px;font:13px Tahoma}
-#bottom{position:absolute;bottom:12px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:end}
-#pad{width:115px;height:115px;border:2px solid #e0c98e;border-radius:50%;background:#14251d99;position:relative;touch-action:none}
-#stick{position:absolute;left:33px;top:33px;width:45px;height:45px;border-radius:50%;background:#e2ca91}
-#actions{display:flex;gap:5px}
-#actions button{width:65px;height:62px;border-radius:50%}
-#talk{border-radius:10px!important}
-.panel{position:absolute;inset:0;background:#08110ddd;display:none;align-items:center;justify-content:center;padding:12px}
-.box{width:95%;max-width:550px;max-height:90%;overflow:auto;background:#263a2b;border:2px solid #d0b477;border-radius:15px;padding:15px}
-h2{color:#f0d18d}
-p{line-height:1.8;font-size:14px}
-.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.row button{flex:1}
-input{width:100%;padding:12px;background:#14231a;color:white;border:1px solid #c9a968;border-radius:8px;font:14px Tahoma}
-#toast{position:absolute;top:115px;left:10%;right:10%;text-align:center;background:#14251e;border:1px solid #d0b477;border-radius:9px;padding:10px;display:none}
+*{box-sizing:border-box;touch-action:manipulation}
+body{
+ margin:0;background:#17231d;color:#fff;
+ font-family:Tahoma,Arial,sans-serif;
+ overflow:hidden
+}
+header{
+ height:55px;background:#263b2d;
+ display:flex;align-items:center;justify-content:center;
+ border-bottom:2px solid #b99b5c
+}
+header h1{font-size:21px;margin:0}
+#status{
+ height:48px;background:#1d3025;
+ display:flex;justify-content:space-around;
+ align-items:center;font-size:12px
+}
+#game{
+ display:block;width:100%;height:calc(100dvh - 285px);
+ min-height:260px;background:#a8b77b;
+}
+#message{
+ min-height:55px;background:#263b2d;
+ padding:9px;text-align:center;
+ font-size:13px;line-height:1.8
+}
+.panel{
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:6px;padding:7px
+}
+button{
+ border:1px solid #d4b66f;
+ background:linear-gradient(#c6a15b,#96713a);
+ color:#21180c;border-radius:9px;
+ padding:11px 4px;font-weight:bold;
+ font-family:Tahoma;font-size:13px
+}
+button:active{transform:scale(.95)}
+#movement{
+ width:190px;margin:auto;
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:5px;padding:4px
+}
+#movement button{font-size:21px;padding:8px}
+#bottom{background:#17251d}
 </style>
 </head>
+
 <body>
+
+<header><h1>⚔️ داریوش | سپاه ساسانی ⚔️</h1></header>
+
+<div id="status">
+ <span>❤️ <b id="health">100</b></span>
+ <span>🪙 <b id="coins">35</b></span>
+ <span>🛡️ <b id="armor">ساده</b></span>
+ <span>⭐ <b id="rank">سرباز</b></span>
+</div>
 
 <canvas id="game"></canvas>
 
-<div id="hud">
- <div class="stat">⚔ داریوش | <span id="place">بیشاپور</span></div>
- <div class="stat">❤️ <span id="hp">100</span></div>
- <div class="stat">🪙 <span id="gold">35</span></div>
- <div class="stat">🏅 <span id="rank">جوان‌سرباز</span></div>
-</div>
-
-<div id="menu">
- <button onclick="openMap()">🗺 نقشه</button>
- <button onclick="show('mission')">📜 مأموریت</button>
- <button onclick="show('gear')">🎒 تجهیزات</button>
- <button onclick="fullscreen()">⛶ تمام‌صفحه</button>
+<div id="message">
+ به شهر بیشاپور خوش آمدی. اطراف را بگرد و با فرمانده صحبت کن.
 </div>
 
 <div id="bottom">
- <div id="pad"><div id="stick"></div></div>
- <div id="actions">
-  <button onclick="attack()">⚔<br>حمله</button>
-  <button id="defend">🛡<br>دفاع</button>
-  <button id="talk" onclick="interact()">💬<br>تعامل</button>
- </div>
+
+<div id="movement">
+ <span></span><button onclick="move(0,-1)">▲</button><span></span>
+ <button onclick="move(-1,0)">◀</button>
+ <button onclick="move(0,1)">▼</button>
+ <button onclick="move(1,0)">▶</button>
 </div>
 
-<div id="toast"></div>
-
-<div class="panel" id="dialog">
- <div class="box">
-  <h2 id="npcTitle">گفت‌وگو</h2>
-  <p id="npcText"></p>
-  <div class="row" id="choices"></div>
-  <input id="message" placeholder="پیامت را بنویس">
-  <div class="row">
-   <button onclick="sendMessage()">ارسال</button>
-   <button onclick="hide('dialog')">بستن</button>
-  </div>
-  <p>گفت‌وگو در این نسخه با پاسخ‌های داخلی بازی انجام می‌شود و هنوز به هوش مصنوعی آنلاین متصل نیست.</p>
- </div>
+<div class="panel">
+ <button onclick="talk()">💬 گفت‌وگو</button>
+ <button onclick="quest()">📜 مأموریت</button>
+ <button onclick="attack()">⚔️ حمله</button>
+ <button onclick="defend()">🛡️ دفاع</button>
+ <button onclick="shop()">🏪 فروشگاه</button>
+ <button onclick="nextCity()">🗺️ شهر بعدی</button>
 </div>
 
-<div class="panel" id="map">
- <div class="box">
-  <h2>نقشهٔ شاهنشاهی ساسانی</h2>
-  <div id="cities"></div>
-  <button onclick="hide('map')">بازگشت</button>
- </div>
-</div>
-
-<div class="panel" id="mission">
- <div class="box">
-  <h2>مأموریت داریوش</h2>
-  <p id="missionText">با فرماندهٔ سپاه صحبت کن و به سپاه شاپور دوم بپیوند.</p>
-  <button onclick="reward()">گرفتن پاداش</button>
-  <button onclick="hide('mission')">بستن</button>
- </div>
-</div>
-
-<div class="panel" id="gear">
- <div class="box">
-  <h2>تجهیزات</h2>
-  <p id="gearText">شمشیر ساده | لباس سربازی | بدون سپر</p>
-  <button onclick="buyShield()">خرید سپر چوبی ـ ۲۰ سکه</button>
-  <button onclick="buyArmor()">خرید زره ـ ۳۰ سکه</button>
-  <button onclick="hide('gear')">بستن</button>
- </div>
 </div>
 
 <script>
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 
-let W,H;
-function resize(){
- W=canvas.width=innerWidth;
- H=canvas.height=innerHeight;
-}
-resize();
-addEventListener("resize",resize);
+let W=800,H=500;
+let player={x:400,y:340};
+let health=100,coins=35,armor=0;
+let city=0,enemyAlive=true;
+let defending=false;
+let message=document.getElementById("message");
 
-let player={
- x:0,y:0,hp:100,gold:35,
- joined:false,shield:false,armor:false,
- defending:false
-};
-
-let cities=[
- "بیشاپور","گور","تیسفون","اصطخر",
- "کرمان","مرز روم","ری","مرو"
+const cities=[
+ "بیشاپور","گور","اصطخر","تیسفون",
+ "کرمان","ری","مرو"
 ];
 
-let city=0;
-let people=[];
-let rebels=[];
-let joy={x:0,y:0};
-let currentNPC=null;
-let rewardTaken=false;
-let spawnTime=0;
-let last=0;
+const npcs=[
+ {x:245,y:250,name:"فرمانده",color:"#d9c29a"},
+ {x:555,y:270,name:"بازرگان",color:"#b8a078"},
+ {x:390,y:170,name:"نگهبان",color:"#d1b58b"}
+];
 
-function initPeople(){
- people=[
- {name:"فرماندهٔ سپاه",kind:"commander",x:-140,y:50,color:"#873e32"},
- {name:"نگهبان شهر",kind:"guard",x:0,y:-140,color:"#405c83"},
- {name:"بازرگان",kind:"merchant",x:170,y:65,color:"#9b6638"},
- {name:"مسافر",kind:"traveler",x:100,y:-180,color:"#667d45"},
- {name:"ریش‌سفید",kind:"elder",x:-200,y:-100,color:"#80694e"}
- ];
-}
-initPeople();
+let enemy={x:590,y:380};
 
-function toast(t){
- let e=document.getElementById("toast");
- e.textContent=t;
- e.style.display="block";
- setTimeout(()=>e.style.display="none",2200);
+function say(text){
+ message.textContent=text;
 }
 
-function ui(){
- document.getElementById("place").textContent=cities[city];
- document.getElementById("hp").textContent=player.hp;
- document.getElementById("gold").textContent=player.gold;
- document.getElementById("rank").textContent=
- player.joined?"سرباز ساسانی":"جوان‌سرباز";
+function resize(){
+ const rect=canvas.getBoundingClientRect();
+ const dpr=Math.min(window.devicePixelRatio||1,2);
+ canvas.width=Math.floor(rect.width*dpr);
+ canvas.height=Math.floor(rect.height*dpr);
+ W=canvas.width;H=canvas.height;
 }
+window.addEventListener("resize",resize);
+resize();
 
-function show(id){document.getElementById(id).style.display="flex"}
-function hide(id){document.getElementById(id).style.display="none"}
-
-function pos(x,y){
- return {x:W/2+x-player.x,y:H/2+20+y-player.y};
-}
-
-function building(x,y,w,h){
- let p=pos(x,y);
- ctx.fillStyle="#ad8050";
- ctx.fillRect(p.x,p.y,w,h);
- ctx.fillStyle="#d1ad72";
- ctx.beginPath();
- ctx.moveTo(p.x-10,p.y+10);
- ctx.lineTo(p.x+w/2,p.y-35);
- ctx.lineTo(p.x+w+10,p.y+10);
- ctx.fill();
- ctx.fillStyle="#59412d";
- ctx.fillRect(p.x+w/2-12,p.y+h-40,24,40);
- ctx.fillRect(p.x+15,p.y+35,20,25);
-}
-
-function tree(x,y){
- let p=pos(x,y);
- ctx.fillStyle="#65482b";
- ctx.fillRect(p.x-3,p.y,6,18);
- ctx.fillStyle="#35573a";
- ctx.beginPath();
- ctx.arc(p.x,p.y-12,19,0,Math.PI*2);
- ctx.fill();
-}
-
-function person(x,y,color,name,hero=false,enemy=false){
- let p=pos(x,y);
- ctx.fillStyle="#0005";
- ctx.beginPath();
- ctx.ellipse(p.x,p.y+15,15,6,0,0,Math.PI*2);
- ctx.fill();
-
+function roundedRect(x,y,w,h,r,color){
  ctx.fillStyle=color;
- ctx.fillRect(p.x-10,p.y-12,20,25);
-
- ctx.fillStyle="#d8b88b";
  ctx.beginPath();
- ctx.arc(p.x,p.y-20,10,0,Math.PI*2);
+ ctx.roundRect(x,y,w,h,r);
+ ctx.fill();
+}
+
+function drawBuilding(x,y,w,h){
+ roundedRect(x+7,y+8,w,h,5,"#66513b");
+ roundedRect(x,y,w,h,5,"#c6a477");
+ roundedRect(x+10,y+10,w-20,h-15,3,"#a98456");
+ ctx.fillStyle="#60452e";
+ ctx.fillRect(x+w*.38,y+h*.48,w*.24,h*.52);
+ ctx.fillStyle="#e2c48d";
+ ctx.fillRect(x+12,y+12,12,12);
+ ctx.fillRect(x+w-24,y+12,12,12);
+}
+
+function drawWall(){
+ ctx.fillStyle="#806344";
+ ctx.fillRect(0,H*.13,W,18);
+ ctx.fillRect(0,H*.13,18,H*.48);
+ ctx.fillRect(W-18,H*.13,18,H*.48);
+ for(let x=0;x<W;x+=48){
+  ctx.fillStyle="#aa8a60";
+  ctx.fillRect(x,H*.13-8,30,10);
+ }
+}
+
+function drawPerson(x,y,color,kind){
+ // سایه
+ ctx.fillStyle="rgba(0,0,0,.25)";
+ ctx.beginPath();
+ ctx.ellipse(x,y+17,13,5,0,0,Math.PI*2);
  ctx.fill();
 
- if(hero){
-  ctx.fillStyle="#e4c16e";
-  ctx.fillRect(p.x-5,p.y-34,10,5);
-  ctx.strokeStyle="#ddd";
-  ctx.lineWidth=3;
+ // پاها
+ ctx.fillStyle="#49382b";
+ ctx.fillRect(x-8,y+5,6,13);
+ ctx.fillRect(x+3,y+5,6,13);
+
+ // بدن
+ roundedRect(x-12,y-10,24,25,6,color);
+
+ // سر
+ ctx.fillStyle="#d5a77e";
+ ctx.beginPath();
+ ctx.arc(x,y-17,10,0,Math.PI*2);
+ ctx.fill();
+
+ // کلاه
+ ctx.fillStyle=kind==="player"?"#c9a34f":"#756044";
+ ctx.beginPath();
+ ctx.arc(x,y-20,10,Math.PI,Math.PI*2);
+ ctx.fill();
+
+ if(kind==="player"){
+  ctx.strokeStyle="#e4d1a2";
+  ctx.lineWidth=4;
   ctx.beginPath();
-  ctx.moveTo(p.x+10,p.y-5);
-  ctx.lineTo(p.x+23,p.y-27);
+  ctx.moveTo(x+11,y-5);
+  ctx.lineTo(x+22,y-22);
   ctx.stroke();
  }
+}
 
- ctx.fillStyle="#fff2d4";
- ctx.font="11px Tahoma";
+function drawEnemy(x,y){
+ drawPerson(x,y,"#8b4038","enemy");
+ ctx.fillStyle="#fff";
+ ctx.font="12px Tahoma";
  ctx.textAlign="center";
- ctx.fillText(name,p.x,p.y-40);
+ ctx.fillText("شورشی",x,y-37);
 }
 
 function draw(){
  ctx.clearRect(0,0,W,H);
 
- ctx.fillStyle="#87966c";
+ // زمین
+ ctx.fillStyle="#a6ae72";
  ctx.fillRect(0,0,W,H);
 
- let tile=65;
- for(let y=0;y<H;y+=tile){
-  for(let x=0;x<W;x+=tile){
-   ctx.fillStyle=((x+y)/tile)%2?"#829165":"#89986c";
-   ctx.fillRect(x,y,tile-2,tile-2);
-  }
+ // مسیر سنگی
+ ctx.fillStyle="#c6b48c";
+ ctx.fillRect(W*.39,0,W*.22,H);
+ ctx.fillRect(0,H*.53,W,H*.16);
+
+ // چمن‌ها
+ for(let i=0;i<55;i++){
+  let x=(i*97)%W;
+  let y=(i*61)%H;
+  ctx.fillStyle=i%2?"#87975b":"#77894d";
+  ctx.fillRect(x,y,4,3);
  }
-
- // جاده‌های شهر
- ctx.fillStyle="#c1aa7a";
- ctx.fillRect(W/2-65,0,130,H);
- ctx.fillRect(0,H/2-35,W,70);
-
- // دیوار شهر
- ctx.strokeStyle="#705b3e";
- ctx.lineWidth=12;
- ctx.strokeRect(W/2-360,H/2-280,720,560);
 
  // ساختمان‌ها
- building(-280,-210,140,110);
- building(140,-230,150,120);
- building(-280,130,145,110);
- building(180,130,145,110);
- building(-50,-280,100,80);
+ drawBuilding(W*.07,H*.23,W*.22,H*.19);
+ drawBuilding(W*.71,H*.23,W*.22,H*.19);
+ drawBuilding(W*.08,H*.68,W*.18,H*.18);
+ drawBuilding(W*.75,H*.68,W*.17,H*.18);
 
- tree(-200,-40);
- tree(230,-60);
- tree(-210,240);
- tree(260,240);
- tree(-80,260);
-
- // چاه میدان
- let p=pos(0,0);
- ctx.fillStyle="#796647";
+ // دیوار و دروازه
+ drawWall();
+ ctx.fillStyle="#49372a";
  ctx.beginPath();
- ctx.arc(p.x,p.y,23,0,Math.PI*2);
- ctx.fill();
- ctx.fillStyle="#4c7880";
- ctx.beginPath();
- ctx.arc(p.x,p.y,14,0,Math.PI*2);
+ ctx.arc(W/2,H*.13,35,Math.PI,0);
+ ctx.fillRect(W/2-35,H*.13-2,70,24);
  ctx.fill();
 
- people.forEach(n=>person(n.x,n.y,n.color,n.name));
- rebels.forEach(r=>person(r.x,r.y,"#7d342b","شورشی",false,true));
- person(player.x,player.y,"#9a80a8","داریوش",true);
+ // نوشتهٔ شهر
+ ctx.fillStyle="#fff";
+ ctx.font="bold 17px Tahoma";
+ ctx.textAlign="center";
+ ctx.fillText(cities[city],W/2,35);
 
- requestAnimationFrame(loop);
-}
+ // NPCها
+ npcs.forEach(n=>{
+  drawPerson(n.x*W/800,n.y*H/500,n.color,"npc");
+ });
 
-function nearest(){
- let all=[
-  ...people.map(p=>({ref:p,type:"person"})),
-  ...rebels.map(r=>({ref:r,type:"rebel"}))
- ];
- let best=null,d0=75;
- for(let a of all){
-  let d=Math.hypot(a.ref.x-player.x,a.ref.y-player.y);
-  if(d<d0){best=a;d0=d}
- }
- return best;
-}
-
-function interact(){
- let n=nearest();
- if(!n){toast("به یک شخصیت نزدیک شو.");return}
- currentNPC=n.ref;
-
- document.getElementById("npcTitle").textContent=
- n.ref.name||"شورشی";
-
- let text="درود بر تو، داریوش.";
- if(n.ref.kind==="commander")
-  text="داریوش، سپاه شاهنشاه شاپور دوم به سربازان تازه نیاز دارد.";
- if(n.ref.kind==="merchant")
-  text="به بازار خوش آمدی. چه چیزی نیاز داری؟";
- if(n.type==="rebel")
-  text="شورشی راهت را سد کرده است!";
-
- document.getElementById("npcText").textContent=text;
-
- let c=document.getElementById("choices");
- c.innerHTML="";
-
- if(n.ref.kind==="commander"){
-  addChoice("پیوستن به سپاه",()=>{
-   player.joined=true;
-   document.getElementById("missionText").textContent=
-   "به سپاه شاپور دوم پیوستی. از شهر دفاع کن!";
-   toast("به سپاه ساسانی پیوستی!");
-   ui();
-  });
- }
- if(n.type==="rebel"){
-  addChoice("وادار به عقب‌نشینی",()=>{
-   rebels=rebels.filter(r=>r!==n.ref);
-   player.gold+=5;
-   ui();
-   toast("۵ سکه به دست آوردی.");
-  });
+ // دشمن
+ if(enemyAlive){
+  drawEnemy(enemy.x*W/800,enemy.y*H/500);
  }
 
- show("dialog");
+ // شخصیت بازیکن
+ drawPerson(player.x*W/800,player.y*H/500,"#315b83","player");
+
+ requestAnimationFrame(draw);
+}
+draw();
+
+function move(dx,dy){
+ player.x=Math.max(35,Math.min(765,player.x+dx*19));
+ player.y=Math.max(80,Math.min(470,player.y+dy*19));
 }
 
-function addChoice(label,fn){
- let b=document.createElement("button");
- b.textContent=label;
- b.onclick=fn;
- document.getElementById("choices").appendChild(b);
+function talk(){
+ let closest=null,min=Infinity;
+ npcs.forEach(n=>{
+  let d=Math.hypot(player.x-n.x,player.y-n.y);
+  if(d<min){min=d;closest=n}
+ });
+ if(min<90){
+  if(closest.name==="فرمانده")
+   say("فرمانده: سرباز داریوش! برای دفاع از شهر آماده باش.");
+  else if(closest.name==="بازرگان")
+   say("بازرگان: زره و سپرهای خوبی برای فروش دارم.");
+  else
+   say("نگهبان: مراقب شورشی‌ها باش. امنیت شهر مهم است.");
+ }else{
+  say("برای صحبت، به یکی از شخصیت‌ها نزدیک شو.");
+ }
 }
 
-function sendMessage(){
- let s=document.getElementById("message").value.trim();
- if(!s)return;
-
- let answer="در این روزگار خبرهای زیادی در شهر می‌پیچد.";
- if(s.includes("سلام"))answer="درود بر تو، داریوش!";
- if(s.includes("شاپور"))answer="شاهنشاه شاپور دوم فرمانروای ایران است.";
- if(s.includes("شورش"))answer="شورشی‌ها در نزدیکی شهر دیده شده‌اند.";
- if(s.includes("سپاه"))answer="فرماندهٔ سپاه در میدان شهر است.";
- if(s.includes("نام"))answer="من "+(currentNPC.name||"یک شورشی")+" هستم.";
-
- document.getElementById("npcText").textContent=
- "تو: "+s+"\n\n"+(currentNPC.name||"شورشی")+": "+answer;
-
- document.getElementById("message").value="";
+function quest(){
+ coins+=10;
+ document.getElementById("coins").textContent=coins;
+ say("فرمانده: مأموریت نگهبانی را انجام دادی! ۱۰ سکه پاداش گرفتی.");
 }
 
 function attack(){
- let n=nearest();
- if(!n||n.type!=="rebel"){
-  toast("شورشی‌ای در نزدیکی تو نیست.");
+ if(!enemyAlive){
+  say("فعلاً دشمنی در اطراف نیست.");
   return;
  }
- n.ref.hp-=25;
- if(n.ref.hp<=0){
-  rebels=rebels.filter(r=>r!==n.ref);
-  player.gold+=8;
-  toast("شورشی شکست خورد؛ ۸ سکه گرفتی.");
-  ui();
- }else toast("ضربه وارد شد!");
-}
-
-function spawnRebel(){
- let a=Math.random()*Math.PI*2;
- let d=320;
- rebels.push({
-  x:player.x+Math.cos(a)*d,
-  y:player.y+Math.sin(a)*d,
-  hp:50,cool:0
- });
- toast("⚠ شورشی‌ها به شهر نزدیک شده‌اند!");
-}
-
-function update(dt){
- let dx=joy.x,dy=joy.y;
- if(keys.ArrowRight)dx++;
- if(keys.ArrowLeft)dx--;
- if(keys.ArrowDown)dy++;
- if(keys.ArrowUp)dy--;
-
- let l=Math.hypot(dx,dy);
- if(l){
-  player.x+=dx/l*150*dt;
-  player.y+=dy/l*150*dt;
+ let d=Math.hypot(player.x-enemy.x,player.y-enemy.y);
+ if(d<100){
+  enemyAlive=false;
+  coins+=15;
+  document.getElementById("coins").textContent=coins;
+  say("شورشی شکست خورد! ۱۵ سکه به دست آوردی.");
+ }else{
+  say("برای حمله باید به دشمن نزدیک‌تر شوی.");
  }
+}
 
- spawnTime+=dt;
- if(spawnTime>22&&rebels.length<4){
-  spawnTime=0;
-  spawnRebel();
+function defend(){
+ defending=true;
+ say("حالت دفاع فعال شد. در برابر حملهٔ بعدی آماده‌ای.");
+}
+
+function shop(){
+ if(coins>=20 && armor===0){
+  coins-=20;
+  armor=1;
+  document.getElementById("coins").textContent=coins;
+  document.getElementById("armor").textContent="فلزی";
+  say("زره فلزی خریدی! دفاعت بهتر شد.");
+ }else if(armor===1){
+  say("تو همین حالا زره فلزی داری.");
+ }else{
+  say("برای خرید زره فلزی به ۲۰ سکه نیاز داری.");
  }
-
- rebels.forEach(r=>{
-  let d=Math.hypot(player.x-r.x,player.y-r.y);
-  if(d>32){
-   r.x+=(player.x-r.x)/d*48*dt;
-   r.y+=(player.y-r.y)/d*48*dt;
-  }else{
-   r.cool-=dt;
-   if(r.cool<=0){
-    r.cool=1.5;
-    player.hp=Math.max(0,player.hp-(player.defending?2:8));
-    ui();
-    toast("شورشی به تو حمله کرد!");
-    if(player.hp===0){
-     player.hp=100;
-     player.gold=Math.max(0,player.gold-10);
-     player.x=player.y=0;
-     toast("عقب‌نشینی کردی و ۱۰ سکه از دست دادی.");
-     ui();
-    }
-   }
-  }
- });
 }
 
-function loop(t){
- let dt=Math.min((t-last)/1000||0,.04);
- last=t;
- update(dt);
- draw();
+function nextCity(){
+ city=(city+1)%cities.length;
+ player.x=400;player.y=340;
+ enemyAlive=true;
+ enemy={x:590,y:380};
+ say("به شهر "+cities[city]+" رسیدی. ماجراجویی ادامه دارد!");
 }
 
-function openMap(){
- let el=document.getElementById("cities");
- el.innerHTML="";
- cities.forEach((name,i)=>{
-  let b=document.createElement("button");
-  b.textContent=name;
-  b.style.margin="4px";
-  b.onclick=()=>{
-   city=i;
-   player.x=player.y=0;
-   rebels=[];
-   initPeople();
-   ui();
-   hide("map");
-   toast("به "+name+" رسیدی.");
-  };
-  el.appendChild(b);
- });
- show("map");
-}
-
-function reward(){
- if(player.joined&&!rewardTaken){
-  player.gold+=15;
-  rewardTaken=true;
-  ui();
-  toast("۱۵ سکه پاداش گرفتی!");
- }else toast("ابتدا به سپاه بپیوند یا پاداش را قبلاً گرفته‌ای.");
-}
-
-function buyShield(){
- if(player.gold>=20&&!player.shield){
-  player.gold-=20;
-  player.shield=true;
-  ui();
-  toast("سپر چوبی خریدی.");
- }else toast("سکه کافی نداری یا سپر را داری.");
-}
-
-function buyArmor(){
- if(player.gold>=30&&!player.armor){
-  player.gold-=30;
-  player.armor=true;
-  ui();
-  toast("زره آهنی خریدی.");
- }else toast("سکه کافی نداری یا زره را داری.");
-}
-
-function fullscreen(){
- if(!document.fullscreenElement){
-  document.documentElement.requestFullscreen?.();
- }else document.exitFullscreen?.();
-}
-
-// دستهٔ لمسی
-const pad=document.getElementById("pad");
-const stick=document.getElementById("stick");
-let pointer=null;
-
-function moveStick(e){
- let r=pad.getBoundingClientRect();
- let x=e.clientX-r.left-r.width/2;
- let y=e.clientY-r.top-r.height/2;
- let l=Math.hypot(x,y),m=33;
- if(l>m){x=x/l*m;y=y/l*m}
- joy.x=x/m;joy.y=y/m;
- stick.style.left=(33+x)+"px";
- stick.style.top=(33+y)+"px";
-}
-
-pad.addEventListener("pointerdown",e=>{
- pointer=e.pointerId;
- pad.setPointerCapture(pointer);
- moveStick(e);
+// کنترل با صفحه‌کلید
+window.addEventListener("keydown",e=>{
+ if(e.key==="ArrowUp"||e.key==="w")move(0,-1);
+ if(e.key==="ArrowDown"||e.key==="s")move(0,1);
+ if(e.key==="ArrowLeft"||e.key==="a")move(-1,0);
+ if(e.key==="ArrowRight"||e.key==="d")move(1,0);
 });
-pad.addEventListener("pointermove",e=>{
- if(e.pointerId===pointer)moveStick(e);
-});
-function stop(){
- pointer=null;
- joy.x=joy.y=0;
- stick.style.left="33px";
- stick.style.top="33px";
-}
-pad.addEventListener("pointerup",stop);
-pad.addEventListener("pointercancel",stop);
-
-addEventListener("keydown",e=>keys[e.key]=true);
-addEventListener("keyup",e=>keys[e.key]=false);
-
-document.getElementById("defend").onpointerdown=()=>{
- player.defending=true;
-};
-document.getElementById("defend").onpointerup=()=>{
- player.defending=false;
-};
-document.getElementById("defend").onpointercancel=()=>{
- player.defending=false;
-};
-
-ui();
-requestAnimationFrame(loop);
 </script>
 </body>
 </html>
